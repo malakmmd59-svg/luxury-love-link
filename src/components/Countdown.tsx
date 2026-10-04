@@ -5,7 +5,7 @@ const TARGET = new Date(2026, 9, 16, 19, 0, 0).getTime();
 
 const AR_DIGITS = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"];
 const toArabicDigits = (value: string | number) =>
-  String(value).replace(/\d/g, (d) => AR_DIGITS[Number(d)]);
+  String(value).replace(/\d/g, (d) => AR_DIGITS[Number(d)] ?? d);
 
 type Units = { days: number; hours: number; minutes: number; seconds: number; passed: boolean };
 
