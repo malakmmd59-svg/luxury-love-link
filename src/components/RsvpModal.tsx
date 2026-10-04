@@ -155,11 +155,8 @@ export function RsvpModal({
               </label>
             )}
 
-            <button
-              type="submit"
-              className="mt-6 w-full rounded-full bg-gradient-to-l from-gold-deep via-gold to-gold-deep px-8 py-3.5 text-sm font-bold text-navy shadow-lg transition-transform hover:scale-[1.02] active:scale-[0.98]"
-            >
-              تأكيد
+            <button type="submit" className="btn-luxe solid mt-6 w-full">
+              تأكيد · Confirm
             </button>
           </form>
         )}

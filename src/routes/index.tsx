@@ -1,16 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import heroImage from "@/assets/hero-couple.png";
-import ornament from "@/assets/floral-ornament.png";
+import couple from "@/assets/couple.jpg.asset.json";
 import { Countdown } from "@/components/Countdown";
 import { RsvpModal, readRsvp, type RsvpData } from "@/components/RsvpModal";
 
-/* ─────────────────────────────────────────────
-   ✏️  عدّل بيانات الحفل من هنا فقط:
-   ───────────────────────────────────────────── */
+/* عدّل بيانات الحفل من هنا */
 const EVENT = {
-  time: "الساعة ٧:٠٠ مساءً",
+  timeAr: "الساعة ٧:٠٠ مساءً",
+  timeEn: "7:00 in the evening",
   venueName: "قاعة الاستقبال",
+  venueEn: "The Grand Reception Hall",
   venueAddress: "سيتم الإعلان عن العنوان قريباً",
   mapsUrl: "https://www.google.com/maps",
 };
@@ -18,17 +17,10 @@ const EVENT = {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "دعوة خطوبة عزيز وملك | ١٦ أكتوبر" },
-      {
-        name: "description",
-        content:
-          "يتشرف عزيز وملك بدعوتكم لمشاركتهم فرحتهم بمناسبة خطوبتهما — الجمعة ١٦ أكتوبر ٢٠٢٦",
-      },
-      { property: "og:title", content: "دعوة خطوبة عزيز وملك" },
-      {
-        property: "og:description",
-        content: "شاركونا فرحتنا بمناسبة الخطوبة — الجمعة ١٦ أكتوبر ٢٠٢٦",
-      },
+      { title: "Aziz & Malak — دعوة خطوبة عزيز وملك | ١٦ أكتوبر ٢٠٢٦" },
+      { name: "description", content: "يتشرف عزيز وملك بدعوتكم لحفل خطوبتهما — الجمعة ١٦ أكتوبر ٢٠٢٦" },
+      { property: "og:title", content: "Aziz & Malak — Engagement Invitation" },
+      { property: "og:description", content: "Join us on October 16th, 2026 — شاركونا فرحتنا" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -38,234 +30,183 @@ export const Route = createFileRoute("/")({
 
 function Reveal({ children, className = "", delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
-
+  const [v, setV] = useState(false);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          setVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.15 },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
+    const io = new IntersectionObserver(([e]) => e?.isIntersecting && (setV(true), io.disconnect()), { threshold: 0.15 });
+    io.observe(el);
+    return () => io.disconnect();
   }, []);
-
   return (
-    <div ref={ref} className={`reveal ${visible ? "reveal-visible" : ""} ${className}`} style={{ transitionDelay: `${delay}ms` }}>
+    <div ref={ref} style={{ transitionDelay: `${delay}ms` }} className={`reveal ${v ? "reveal-visible" : ""} ${className}`}>
       {children}
     </div>
   );
 }
 
-function SectionTitle({ children }: { children: ReactNode }) {
+function Eyebrow({ en, ar }: { en: string; ar: string }) {
   return (
-    <div className="flex flex-col items-center">
-      <h2 className="font-amiri text-3xl font-bold text-gold-shimmer sm:text-4xl">{children}</h2>
-      <div className="mt-3 flex items-center gap-3">
-        <span className="h-px w-14 bg-gradient-to-l from-transparent to-gold/70" />
+    <div className="flex flex-col items-center gap-1 text-center">
+      <span className="font-cormorant text-xs uppercase tracking-[0.45em] text-rose-gold">{en}</span>
+      <span className="font-amiri text-2xl text-navy sm:text-3xl">{ar}</span>
+      <span className="mt-2 flex items-center gap-2">
+        <span className="h-px w-10 bg-gold" />
         <span className="h-1.5 w-1.5 rotate-45 bg-gold" />
-        <span className="h-px w-14 bg-gradient-to-r from-transparent to-gold/70" />
-      </div>
+        <span className="h-px w-10 bg-gold" />
+      </span>
     </div>
   );
 }
 
-function DetailIcon({ children }: { children: ReactNode }) {
+function Envelope({ onOpen }: { onOpen: () => void }) {
+  const [open, setOpen] = useState(false);
+  const go = () => {
+    if (open) return;
+    setOpen(true);
+    setTimeout(onOpen, 2600);
+  };
   return (
-    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-gold/40 bg-secondary text-gold-deep">
-      {children}
+    <div className={`env-wrap fixed inset-0 z-50 flex flex-col items-center justify-center bg-background grain px-6 ${open ? "env-open" : ""}`}>
+      <p className="mb-10 font-cormorant text-xs uppercase tracking-[0.5em] text-rose-gold">You are invited</p>
+      <button onClick={go} aria-label="Tap to open invitation" className="relative h-56 w-80 [perspective:1200px] sm:h-64 sm:w-96">
+        <div className="env-letter absolute inset-x-4 top-4 bottom-2 flex flex-col items-center justify-center bg-ivory border-metal">
+          <span className="font-playfair text-2xl italic text-navy">Aziz &amp; Malak</span>
+          <span className="font-amiri text-lg text-rose-gold">عزيز و ملك</span>
+        </div>
+        <div className="absolute inset-0 bg-navy shadow-luxe" style={{ clipPath: "polygon(0 0, 50% 55%, 100% 0, 100% 100%, 0 100%)" }} />
+        <div className="env-flap absolute inset-x-0 top-0 h-[60%] bg-navy brightness-125" style={{ filter: "brightness(1.25)" }} />
+        <span className="absolute left-1/2 top-[55%] z-10 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full shadow-luxe transition-opacity duration-300" style={{ background: "var(--gradient-metal)", opacity: open ? 0 : 1 }}>
+          <span className="font-playfair text-lg italic text-navy">A&amp;M</span>
+        </span>
+      </button>
+      <p className="mt-12 animate-pulse font-cormorant text-sm uppercase tracking-[0.4em] text-navy">Tap to open</p>
+      <p className="font-amiri text-base text-muted-foreground">اضغط لفتح الدعوة</p>
     </div>
   );
 }
 
 function Index() {
+  const [opened, setOpened] = useState(false);
   const [rsvpOpen, setRsvpOpen] = useState(false);
   const [rsvp, setRsvp] = useState<RsvpData | null>(null);
-
+  useEffect(() => setRsvp(readRsvp()), []);
   useEffect(() => {
-    setRsvp(readRsvp());
-  }, []);
+    document.body.style.overflow = opened ? "" : "hidden";
+  }, [opened]);
 
   return (
-    <main dir="rtl" lang="ar" className="relative min-h-screen overflow-x-hidden bg-background font-cairo">
-      {/* ═══════════════ Hero ═══════════════ */}
-      <section className="relative flex min-h-svh flex-col items-center justify-center px-5 py-14">
-        {/* ornament corners */}
-        <img src={ornament} alt="" aria-hidden className="pointer-events-none absolute -top-4 -right-6 w-44 opacity-60 float-slow sm:-right-10 sm:w-64" />
-        <img src={ornament} alt="" aria-hidden className="pointer-events-none absolute -bottom-4 -left-6 w-44 rotate-180 opacity-60 float-slow sm:-left-10 sm:w-64" />
+    <div className="min-h-screen overflow-x-hidden bg-background grain text-foreground">
+      {!opened && <Envelope onOpen={() => setOpened(true)} />}
 
-        <Reveal className="flex flex-col items-center text-center">
-          <p className="font-amiri text-lg text-muted-foreground sm:text-xl">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>
+      {/* Hero */}
+      <header className="relative mx-auto flex max-w-5xl flex-col items-center px-6 pb-20 pt-14 text-center">
+        <p className="font-cormorant text-xs uppercase tracking-[0.5em] text-rose-gold">Together with their families</p>
+        <p className="mt-2 font-amiri text-lg text-navy">بكل الحب والفرح ندعوكم</p>
 
-          <div className="glow-pulse mt-8 rounded-t-full border border-gold/50 p-2.5 sm:p-3">
-            <div className="overflow-hidden rounded-t-full border border-gold/30">
-              <img
-                src={heroImage}
-                alt="عزيز وملك"
-                width={1024}
-                height={1280}
-                className="h-64 w-52 object-cover object-top sm:h-96 sm:w-80"
-              />
+        <Reveal className="relative mt-10">
+          <div className="absolute -inset-4 rounded-t-full border border-gold/40" />
+          <div className="glass border-metal shadow-luxe rounded-t-full p-2.5">
+            <div className="h-[26rem] w-72 overflow-hidden rounded-t-full sm:h-[34rem] sm:w-96">
+              <img src={couple.url} alt="Aziz and Malak" className="h-full w-full object-cover transition-transform duration-[2s] hover:scale-105" />
             </div>
           </div>
+          <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-background px-4 font-cormorant text-xs uppercase tracking-[0.4em] text-gold-deep">Engagement</span>
+        </Reveal>
 
-          <p className="mt-10 text-xs font-semibold tracking-[0.5em] text-gold-deep">دعــوة خطــوبة</p>
-
-          <h1 className="mt-4 font-amiri text-5xl font-bold leading-tight text-gold-shimmer sm:text-7xl">
-            عزيز <span className="font-amiri italic">&amp;</span> ملك
+        <Reveal delay={150} className="mt-14">
+          <h1 dir="ltr" className="font-playfair text-6xl font-normal leading-none text-navy sm:text-8xl">
+            Aziz <span className="font-cormorant italic text-metal">&amp;</span> Malak
           </h1>
-
-          <div className="mt-5 flex items-center gap-3 text-sm text-muted-foreground sm:text-base">
-            <span>الجمعة</span>
-            <span className="h-1 w-1 rotate-45 bg-gold" />
-            <span className="font-amiri text-lg text-foreground sm:text-xl">١٦ أكتوبر ٢٠٢٦</span>
-          </div>
-
-          <button
-            onClick={() => setRsvpOpen(true)}
-            className="mt-9 rounded-full bg-gradient-to-l from-gold-deep via-gold to-gold-deep px-10 py-3.5 text-sm font-bold text-navy shadow-lg transition-transform hover:scale-[1.03] active:scale-[0.98]"
-          >
-            تأكيد الحضور
-          </button>
-        </Reveal>
-      </section>
-
-      {/* ═══════════════ Countdown ═══════════════ */}
-      <section className="relative px-5 py-16 sm:py-20">
-        <Reveal>
-          <SectionTitle>العد التنازلي للفرحة</SectionTitle>
-          <div className="mx-auto mt-8 max-w-lg">
-            <Countdown />
+          <p className="mt-4 font-amiri text-4xl text-metal sm:text-5xl">عزيز &amp; ملك</p>
+          <div className="mx-auto mt-8 flex max-w-md items-center justify-center gap-5">
+            <span className="h-px flex-1 bg-gold/60" />
+            <div className="text-center">
+              <p dir="ltr" className="font-cormorant text-lg tracking-[0.3em] text-navy">16 · 10 · 2026</p>
+              <p className="font-amiri text-lg text-rose-gold">١٦ أكتوبر ٢٠٢٦</p>
+            </div>
+            <span className="h-px flex-1 bg-gold/60" />
           </div>
         </Reveal>
+      </header>
+
+      {/* Details */}
+      <section className="mx-auto max-w-4xl px-6 py-16">
+        <Reveal><Eyebrow en="The Celebration" ar="تفاصيل الحفل" /></Reveal>
+        <div className="mt-12 grid gap-px overflow-hidden border-metal shadow-luxe sm:grid-cols-3">
+          {[
+            { en: "Date", ar: "التاريخ", v1: "Friday, October 16th", v2: "الجمعة ١٦ أكتوبر ٢٠٢٦" },
+            { en: "Time", ar: "الوقت", v1: EVENT.timeEn, v2: EVENT.timeAr },
+            { en: "The Couple", ar: "العروسان", v1: "Aziz & Malak", v2: "عزيز و ملك" },
+          ].map((d, i) => (
+            <Reveal key={d.en} delay={i * 120} className="bg-ivory px-6 py-10 text-center">
+              <p className="font-cormorant text-[0.7rem] uppercase tracking-[0.4em] text-rose-gold">{d.en} · {d.ar}</p>
+              <p dir="ltr" className="mt-4 font-playfair text-xl italic text-navy">{d.v1}</p>
+              <p className="mt-1 font-amiri text-lg text-muted-foreground">{d.v2}</p>
+            </Reveal>
+          ))}
+        </div>
       </section>
 
-      {/* ═══════════════ Event details ═══════════════ */}
-      <section className="relative px-5 py-16 sm:py-20">
-        <div className="pointer-events-none absolute inset-x-0 top-0 mx-auto h-px w-2/3 bg-gradient-to-l from-transparent via-gold/40 to-transparent" />
-        <Reveal>
-          <SectionTitle>تفاصيل الحفل</SectionTitle>
-        </Reveal>
-        <Reveal delay={120}>
-          <div className="mx-auto mt-10 max-w-xl rounded-3xl border border-gold/30 bg-card p-7 shadow-[0_20px_60px_-30px_color-mix(in_oklab,var(--gold)_55%,transparent)] sm:p-10">
-            <div className="flex flex-col gap-6">
-              <div className="flex items-center gap-4">
-                <DetailIcon>
-                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2" />
-                    <path d="M16 2v4M8 2v4M3 10h18" />
-                  </svg>
-                </DetailIcon>
-                <div>
-                  <p className="text-xs font-semibold tracking-wider text-gold-deep">التاريخ</p>
-                  <p className="mt-0.5 font-amiri text-xl font-bold text-foreground">الجمعة ١٦ أكتوبر ٢٠٢٦</p>
-                </div>
-              </div>
+      {/* Countdown */}
+      <section className="mx-auto max-w-3xl px-6 py-16">
+        <Reveal><Eyebrow en="Counting the Moments" ar="العد التنازلي" /></Reveal>
+        <Reveal delay={150} className="mt-12"><Countdown /></Reveal>
+      </section>
 
-              <div className="flex items-center gap-4">
-                <DetailIcon>
-                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M12 6v6l4 2" />
-                  </svg>
-                </DetailIcon>
-                <div>
-                  <p className="text-xs font-semibold tracking-wider text-gold-deep">الوقت</p>
-                  <p className="mt-0.5 font-amiri text-xl font-bold text-foreground">{EVENT.time}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <DetailIcon>
-                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="9" cy="13" r="4" />
-                    <circle cx="16" cy="10" r="4" />
-                  </svg>
-                </DetailIcon>
-                <div>
-                  <p className="text-xs font-semibold tracking-wider text-gold-deep">العروسان</p>
-                  <p className="mt-0.5 font-amiri text-xl font-bold text-foreground">عزيز &amp; ملك</p>
-                </div>
+      {/* Venue */}
+      <section className="mx-auto max-w-4xl px-6 py-16">
+        <Reveal><Eyebrow en="The Venue" ar="مكان الحفل" /></Reveal>
+        <Reveal delay={150} className="mt-12">
+          <div className="grid overflow-hidden border-metal shadow-luxe sm:grid-cols-2">
+            <div className="relative flex min-h-64 items-center justify-center bg-navy">
+              <svg viewBox="0 0 200 200" className="absolute inset-0 h-full w-full opacity-20" preserveAspectRatio="none">
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <path key={i} d={`M0 ${i * 22} Q100 ${i * 22 + 30} 200 ${i * 22}`} stroke="var(--champagne)" strokeWidth=".5" fill="none" />
+                ))}
+              </svg>
+              <div className="relative flex flex-col items-center">
+                <span className="flex h-14 w-14 items-center justify-center rounded-full" style={{ background: "var(--gradient-metal)" }}>
+                  <svg viewBox="0 0 24 24" className="h-6 w-6 text-navy" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 21s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12Z" /><circle cx="12" cy="9" r="2.5" /></svg>
+                </span>
+                <span className="mt-4 font-cormorant text-xs uppercase tracking-[0.4em] text-champagne">Location</span>
               </div>
             </div>
-          </div>
-        </Reveal>
-      </section>
-
-      {/* ═══════════════ Location ═══════════════ */}
-      <section className="relative px-5 py-16 sm:py-20">
-        <div className="pointer-events-none absolute inset-x-0 top-0 mx-auto h-px w-2/3 bg-gradient-to-l from-transparent via-gold/40 to-transparent" />
-        <Reveal>
-          <SectionTitle>الموقع</SectionTitle>
-        </Reveal>
-        <Reveal delay={120}>
-          <div className="mx-auto mt-10 max-w-xl overflow-hidden rounded-3xl border border-gold/30 bg-card shadow-[0_20px_60px_-30px_color-mix(in_oklab,var(--gold)_55%,transparent)]">
-            {/* venue placeholder visual */}
-            <div className="relative flex h-40 items-center justify-center bg-gradient-to-l from-secondary via-accent to-secondary">
-              <img src={ornament} alt="" aria-hidden className="absolute inset-0 m-auto w-56 opacity-25" />
-              <div className="relative flex h-14 w-14 items-center justify-center rounded-full border border-gold/50 bg-card text-gold-deep shadow-md">
-                <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-                  <circle cx="12" cy="10" r="3" />
-                </svg>
-              </div>
-            </div>
-            <div className="p-7 text-center sm:p-9">
-              <h3 className="font-amiri text-2xl font-bold text-foreground">{EVENT.venueName}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{EVENT.venueAddress}</p>
-              <a
-                href={EVENT.mapsUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-              >
-                <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-                  <circle cx="12" cy="10" r="3" />
-                </svg>
-                افتح الموقع على خرائط جوجل
+            <div className="bg-ivory p-8 text-center sm:p-10 sm:text-right">
+              <p dir="ltr" className="font-playfair text-2xl italic text-navy">{EVENT.venueEn}</p>
+              <p className="mt-1 font-amiri text-2xl text-rose-gold">{EVENT.venueName}</p>
+              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{EVENT.venueAddress}</p>
+              <a href={EVENT.mapsUrl} target="_blank" rel="noopener noreferrer" className="btn-luxe mt-8 font-cairo">
+                <span>Open in Google Maps</span><span className="h-3 w-px bg-current opacity-40" /><span className="tracking-normal">افتح الموقع</span>
               </a>
             </div>
           </div>
         </Reveal>
       </section>
 
-      {/* ═══════════════ RSVP ═══════════════ */}
-      <section className="relative px-5 pb-20 pt-16 sm:pt-20">
-        <div className="pointer-events-none absolute inset-x-0 top-0 mx-auto h-px w-2/3 bg-gradient-to-l from-transparent via-gold/40 to-transparent" />
-        <Reveal className="mx-auto max-w-xl text-center">
-          <SectionTitle>نتشرف بحضوركم</SectionTitle>
-          <p className="mt-6 font-amiri text-xl leading-loose text-foreground/90 sm:text-2xl">
-            «وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً»
-          </p>
-          <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-            يتشرف عزيز وملك بدعوتكم لمشاركتهما لحظة الفرح — يرجى تأكيد حضوركم قبل الموعد
-          </p>
-          <button
-            onClick={() => setRsvpOpen(true)}
-            className="mt-8 rounded-full bg-gradient-to-l from-gold-deep via-gold to-gold-deep px-12 py-4 text-sm font-bold text-navy shadow-lg transition-transform hover:scale-[1.03] active:scale-[0.98]"
-          >
-            {rsvp ? (rsvp.attending === "yes" ? "تم تأكيد حضوركم ✓" : "تم الرد — شكراً لكم") : "تأكيد الحضور"}
-          </button>
+      {/* RSVP */}
+      <section className="mx-auto max-w-2xl px-6 py-20 text-center">
+        <Reveal><Eyebrow en="Kindly Respond" ar="تأكيد الحضور" /></Reveal>
+        <Reveal delay={150}>
+          <p className="mt-8 font-amiri text-xl leading-loose text-navy">حضوركم يكمّل فرحتنا</p>
+          <p className="font-cormorant text-lg italic text-muted-foreground">Your presence would make our day complete</p>
           {rsvp && (
-            <p className="mt-3 text-xs text-muted-foreground">رد باسم {rsvp.name} — اضغط للتغيير</p>
+            <p className="mt-6 text-sm text-rose-gold">
+              {rsvp.attending === "yes" ? `شكراً ${rsvp.name} — تم تأكيد حضوركم` : `شكراً ${rsvp.name} على ردكم`}
+            </p>
           )}
+          <button onClick={() => setRsvpOpen(true)} className="btn-luxe solid mt-10 font-cairo">
+            <span>Confirm Attendance</span><span className="h-3 w-px bg-current opacity-40" /><span className="tracking-normal">تأكيد الحضور</span>
+          </button>
         </Reveal>
       </section>
 
-      {/* ═══════════════ Footer ═══════════════ */}
-      <footer className="border-t border-gold/20 px-5 py-8 text-center">
-        <p className="font-amiri text-lg text-gold-shimmer">عزيز &amp; ملك</p>
-        <p className="mt-1 text-xs text-muted-foreground">ننتظر مشاركتكم فرحتنا — ١٦ أكتوبر ٢٠٢٦</p>
+      <footer className="border-t border-gold/30 py-10 text-center">
+        <p dir="ltr" className="font-playfair text-2xl italic text-metal">A &amp; M</p>
+        <p className="mt-2 font-cormorant text-xs uppercase tracking-[0.4em] text-muted-foreground">16 · 10 · 2026</p>
       </footer>
 
       <RsvpModal open={rsvpOpen} onClose={() => setRsvpOpen(false)} onSaved={setRsvp} />
-    </main>
+    </div>
   );
 }
