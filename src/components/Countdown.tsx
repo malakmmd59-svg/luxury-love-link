@@ -1,55 +1,31 @@
 import { useEffect, useState } from "react";
 
-// ⏰ عد تنازلي حتى لحظة الحفل — الجمعة ١٦ أكتوبر ٢٠٢٦، ٧:٠٠ مساءً
-const TARGET = new Date(2026, 9, 16, 19, 0, 0).getTime();
-
-const AR_DIGITS = ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"];
-const toArabicDigits = (value: string | number) =>
-  String(value).replace(/\d/g, (d) => AR_DIGITS[Number(d)] ?? d);
-
-type Units = { days: number; hours: number; minutes: number; seconds: number; passed: boolean };
-
-function getUnits(): Units {
-  const diff = TARGET - Date.now();
-  if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0, passed: true };
-  return {
-    days: Math.floor(diff / 86_400_000),
-    hours: Math.floor(diff / 3_600_000) % 24,
-    minutes: Math.floor(diff / 60_000) % 60,
-    seconds: Math.floor(diff / 1_000) % 60,
-    passed: false,
-  };
-}
+const TARGET = new Date("2026-10-16T19:00:00+03:00").getTime();
+const ar = (n: number) => String(n).padStart(2, "0").replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[Number(d)] ?? d);
 
 export function Countdown() {
-  const [units, setUnits] = useState<Units | null>(null);
-
+  const [now, setNow] = useState<number | null>(null);
   useEffect(() => {
-    setUnits(getUnits());
-    const id = setInterval(() => setUnits(getUnits()), 1000);
+    setNow(Date.now());
+    const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
-
-  const cells = [
-    { value: units?.days, label: "يوم" },
-    { value: units?.hours, label: "ساعة" },
-    { value: units?.minutes, label: "دقيقة" },
-    { value: units?.seconds, label: "ثانية" },
+  const diff = now === null ? 0 : Math.max(0, TARGET - now);
+  const units = [
+    { v: Math.floor(diff / 864e5), en: "Days", ar: "يوم" },
+    { v: Math.floor(diff / 36e5) % 24, en: "Hours", ar: "ساعة" },
+    { v: Math.floor(diff / 6e4) % 60, en: "Minutes", ar: "دقيقة" },
+    { v: Math.floor(diff / 1e3) % 60, en: "Seconds", ar: "ثانية" },
   ];
-
   return (
     <div dir="ltr" className="grid grid-cols-4 gap-2 sm:gap-4">
-      {cells.map((cell) => (
-        <div
-          key={cell.label}
-          className="flex flex-col items-center rounded-2xl border border-gold/30 bg-card px-1 py-4 shadow-[0_10px_30px_-18px_color-mix(in_oklab,var(--gold)_60%,transparent)] sm:py-6"
-        >
-          <span className="font-amiri text-3xl font-bold text-gold-shimmer tabular-nums sm:text-5xl">
-            {cell.value === undefined ? "٠٠" : toArabicDigits(String(cell.value).padStart(2, "0"))}
-          </span>
-          <span dir="rtl" className="mt-1 text-[11px] font-medium text-muted-foreground sm:text-sm">
-            {cell.label}
-          </span>
+      {units.map((u) => (
+        <div key={u.en} className="glass border-metal shadow-luxe flex flex-col items-center rounded-t-full px-1 pb-4 pt-6 sm:pt-8">
+          <span className="font-playfair text-3xl tabular-nums text-navy sm:text-5xl">{now === null ? "--" : String(u.v).padStart(2, "0")}</span>
+          <span className="mt-1 font-cairo text-xs text-rose-gold">{now === null ? "" : ar(u.v)}</span>
+          <span className="mt-3 h-px w-6 bg-gold" />
+          <span className="mt-2 font-cormorant text-[0.65rem] uppercase tracking-[0.25em] text-muted-foreground">{u.en}</span>
+          <span className="font-amiri text-sm text-navy">{u.ar}</span>
         </div>
       ))}
     </div>
