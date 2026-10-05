@@ -1,31 +1,41 @@
 import { useEffect, useState } from "react";
 
 const TARGET = new Date("2026-10-16T19:00:00+03:00").getTime();
-const ar = (n: number) => String(n).padStart(2, "0").replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[Number(d)] ?? d);
+const arabicDigits = (value: number) =>
+  String(value)
+    .padStart(2, "0")
+    .replace(/\d/g, (digit) => "٠١٢٣٤٥٦٧٨٩"[Number(digit)] ?? digit);
 
-export function Countdown() {
+const labels = {
+  en: ["Days", "Hours", "Minutes", "Seconds"],
+  ar: ["يوم", "ساعة", "دقيقة", "ثانية"],
+} as const;
+
+export function Countdown({ language }: { language: "en" | "ar" }) {
   const [now, setNow] = useState<number | null>(null);
+
   useEffect(() => {
     setNow(Date.now());
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
   }, []);
-  const diff = now === null ? 0 : Math.max(0, TARGET - now);
-  const units = [
-    { v: Math.floor(diff / 864e5), en: "Days", ar: "يوم" },
-    { v: Math.floor(diff / 36e5) % 24, en: "Hours", ar: "ساعة" },
-    { v: Math.floor(diff / 6e4) % 60, en: "Minutes", ar: "دقيقة" },
-    { v: Math.floor(diff / 1e3) % 60, en: "Seconds", ar: "ثانية" },
+
+  const difference = now === null ? 0 : Math.max(0, TARGET - now);
+  const values = [
+    Math.floor(difference / 86_400_000),
+    Math.floor(difference / 3_600_000) % 24,
+    Math.floor(difference / 60_000) % 60,
+    Math.floor(difference / 1_000) % 60,
   ];
+
   return (
-    <div dir="ltr" className="grid grid-cols-4 gap-2 sm:gap-4">
-      {units.map((u) => (
-        <div key={u.en} className="glass border-metal shadow-luxe flex flex-col items-center rounded-t-full px-1 pb-4 pt-6 sm:pt-8">
-          <span className="font-playfair text-3xl tabular-nums text-navy sm:text-5xl">{now === null ? "--" : String(u.v).padStart(2, "0")}</span>
-          <span className="mt-1 font-cairo text-xs text-rose-gold">{now === null ? "" : ar(u.v)}</span>
-          <span className="mt-3 h-px w-6 bg-gold" />
-          <span className="mt-2 font-cormorant text-[0.65rem] uppercase tracking-[0.25em] text-muted-foreground">{u.en}</span>
-          <span className="font-amiri text-sm text-navy">{u.ar}</span>
+    <div className="countdown-grid" dir={language === "ar" ? "rtl" : "ltr"}>
+      {values.map((value, index) => (
+        <div className="countdown-unit" key={labels.en[index]}>
+          <span className="countdown-number">
+            {now === null ? "—" : language === "ar" ? arabicDigits(value) : String(value).padStart(2, "0")}
+          </span>
+          <span className="countdown-label">{labels[language][index]}</span>
         </div>
       ))}
     </div>

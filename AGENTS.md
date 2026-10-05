@@ -8,3 +8,6 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep invitation copy in centralized locale dictionaries and render exactly one language at a time, because English and Arabic must never mix on screen.
+- Keep optional invitation media behind explicit availability constants, because missing licensed audio or future photos must not create broken requests.
