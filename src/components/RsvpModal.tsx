@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 export type RsvpData = {
   name: string;
@@ -17,48 +18,85 @@ export function readRsvp(): RsvpData | null {
   }
 }
 
+const copy = {
+  en: {
+    title: "Kindly respond",
+    intro: "We would be delighted to know if you will join us.",
+    name: "Your name",
+    placeholder: "Enter your name",
+    question: "Will you be attending?",
+    yes: "Joyfully accepts",
+    no: "Regretfully declines",
+    guests: "Number of guests",
+    submit: "Confirm attendance",
+    close: "Close",
+    thanksYes: "Your attendance is confirmed",
+    thanksNo: "Thank you for letting us know",
+    messageYes: (name: string) => `We look forward to celebrating with you, ${name}.`,
+    messageNo: (name: string) => `We will miss you, ${name}, and hope to see you soon.`,
+  },
+  ar: {
+    title: "تأكيد الحضور",
+    intro: "يسعدنا أن نعرف إن كنتم ستشاركوننا هذه الفرحة.",
+    name: "الاسم",
+    placeholder: "اكتب اسمك هنا",
+    question: "هل ستتمكنون من الحضور؟",
+    yes: "بكل سرور",
+    no: "للأسف لن أتمكن",
+    guests: "عدد الضيوف",
+    submit: "تأكيد الحضور",
+    close: "إغلاق",
+    thanksYes: "تم تأكيد حضوركم",
+    thanksNo: "شكراً لإبلاغنا",
+    messageYes: (name: string) => `نتطلع للاحتفال معكم يا ${name}.`,
+    messageNo: (name: string) => `سنفتقدكم يا ${name} ونتمنى أن نراكم قريباً.`,
+  },
+} as const;
+
 export function RsvpModal({
   open,
   onClose,
   onSaved,
+  language,
 }: {
   open: boolean;
   onClose: () => void;
   onSaved: (data: RsvpData) => void;
+  language: "en" | "ar";
 }) {
   const [name, setName] = useState("");
   const [attending, setAttending] = useState<"yes" | "no">("yes");
   const [guests, setGuests] = useState(2);
   const [done, setDone] = useState(false);
+  const text = copy[language];
 
   useEffect(() => {
-    if (open) {
-      setDone(false);
-      const saved = readRsvp();
-      if (saved) {
-        setName(saved.name);
-        setAttending(saved.attending);
-        setGuests(saved.guests);
-      }
+    if (!open) return;
+    setDone(false);
+    const saved = readRsvp();
+    if (saved) {
+      setName(saved.name);
+      setAttending(saved.attending);
+      setGuests(saved.guests || 1);
     }
   }, [open]);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    const onKey = (event: KeyboardEvent) => event.key === "Escape" && onClose();
     if (open) window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
   if (!open) return null;
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const submit = (event: React.FormEvent) => {
+    event.preventDefault();
     if (!name.trim()) return;
     const data: RsvpData = { name: name.trim(), attending, guests: attending === "yes" ? guests : 0 };
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch {
-      /* storage unavailable — confirmation still shown */
+      // Confirmation still works when browser storage is unavailable.
     }
     onSaved(data);
     setDone(true);
@@ -66,98 +104,80 @@ export function RsvpModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-navy/60 p-4 backdrop-blur-sm"
+      className="rsvp-overlay"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label="تأكيد الحضور"
+      aria-label={text.title}
+      dir={language === "ar" ? "rtl" : "ltr"}
     >
-      <div
-        className="w-full max-w-md rounded-3xl border border-gold/40 bg-card p-6 shadow-2xl sm:p-8"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="rsvp-dialog" onClick={(event) => event.stopPropagation()}>
         {done ? (
-          <div className="flex flex-col items-center py-6 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full border border-gold/50 bg-secondary">
-              <svg viewBox="0 0 24 24" className="h-8 w-8 text-gold-deep" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 6 9 17l-5-5" />
-              </svg>
-            </div>
-            <h3 className="mt-5 font-amiri text-2xl font-bold text-gold-shimmer">
-              {attending === "yes" ? "شكراً لكم! تم تأكيد حضوركم" : "شكراً لكم"}
+          <div className="py-6 text-center">
+            <div className="mx-auto h-px w-16 bg-gold" />
+            <h3 className="mt-8 font-display text-3xl text-foreground">
+              {attending === "yes" ? text.thanksYes : text.thanksNo}
             </h3>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              {attending === "yes"
-                ? `نتشرف بحضوركم يا ${name} — نراكم يوم الجمعة ١٦ أكتوبر`
-                : `نتمنى أن نلتقي بكم قريباً يا ${name}`}
+            <p className="mx-auto mt-4 max-w-sm text-sm leading-7 text-muted-foreground">
+              {attending === "yes" ? text.messageYes(name) : text.messageNo(name)}
             </p>
-            <button
-              onClick={onClose}
-              className="mt-6 rounded-full bg-primary px-8 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-            >
-              إغلاق
-            </button>
+            <Button onClick={onClose} className="invitation-button mt-8">
+              {text.close}
+            </Button>
           </div>
         ) : (
           <form onSubmit={submit}>
             <div className="text-center">
-              <h3 className="font-amiri text-2xl font-bold text-foreground">تأكيد الحضور</h3>
-              <p className="mt-1 text-sm text-muted-foreground">يسعدنا أن نعرف إن كنتم ستشاركوننا الفرحة</p>
+              <p className="section-kicker">RSVP</p>
+              <h3 className="mt-3 font-display text-3xl text-foreground">{text.title}</h3>
+              <p className="mt-3 text-sm leading-7 text-muted-foreground">{text.intro}</p>
             </div>
 
-            <label className="mt-6 block text-sm font-medium">
-              الاسم
+            <label className="mt-8 block text-sm text-foreground">
+              {text.name}
               <input
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(event) => setName(event.target.value)}
                 required
-                placeholder="اكتب اسمك هنا"
-                className="mt-1.5 w-full rounded-xl border border-input bg-background px-4 py-3 text-sm outline-none focus:border-gold focus:ring-2 focus:ring-gold/30"
+                placeholder={text.placeholder}
+                className="editorial-input"
               />
             </label>
 
-            <div className="mt-4">
-              <span className="block text-sm font-medium">هل ستستمتعون بالحضور؟</span>
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                {(
-                  [
-                    { key: "yes", label: "بكل تأكيد! 🌹" },
-                    { key: "no", label: "للأسف لا أستطيع" },
-                  ] as const
-                ).map((opt) => (
-                  <button
-                    key={opt.key}
+            <fieldset className="mt-6">
+              <legend className="text-sm text-foreground">{text.question}</legend>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {(["yes", "no"] as const).map((option) => (
+                  <Button
+                    key={option}
                     type="button"
-                    onClick={() => setAttending(opt.key)}
-                    className={`rounded-xl border px-3 py-3 text-sm font-medium transition-colors ${
-                      attending === opt.key
-                        ? "border-gold bg-secondary text-foreground shadow-sm"
-                        : "border-border bg-background text-muted-foreground hover:border-gold/50"
-                    }`}
+                    variant="outline"
+                    onClick={() => setAttending(option)}
+                    className={`choice-button ${attending === option ? "is-selected" : ""}`}
                   >
-                    {opt.label}
-                  </button>
+                    {text[option]}
+                  </Button>
                 ))}
               </div>
-            </div>
+            </fieldset>
 
             {attending === "yes" && (
-              <label className="mt-4 block text-sm font-medium">
-                عدد الأشخاص
+              <label className="mt-6 block text-sm text-foreground">
+                {text.guests}
                 <input
                   type="number"
                   min={1}
                   max={10}
                   value={guests}
-                  onChange={(e) => setGuests(Math.max(1, Math.min(10, Number(e.target.value) || 1)))}
-                  className="mt-1.5 w-full rounded-xl border border-input bg-background px-4 py-3 text-sm outline-none focus:border-gold focus:ring-2 focus:ring-gold/30"
+                  onChange={(event) => setGuests(Math.max(1, Math.min(10, Number(event.target.value) || 1)))}
+                  className="editorial-input"
                 />
               </label>
             )}
 
-            <button type="submit" className="btn-luxe solid mt-6 w-full">
-              تأكيد · Confirm
-            </button>
+            <Button type="submit" className="invitation-button mt-8 w-full">
+              {text.submit}
+            </Button>
           </form>
         )}
       </div>
