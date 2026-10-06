@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import couple from "@/assets/couple.jpg.asset.json";
-import music from "@/assets/i-found-you.m4a.asset.json";
+import music from "@/assets/i-found-you.mp3.asset.json";
 import specialMomentOne from "@/assets/special-moment-1.jpg.asset.json";
 import specialMomentTwo from "@/assets/special-moment-2.jpg.asset.json";
 import { Button } from "@/components/ui/button";
