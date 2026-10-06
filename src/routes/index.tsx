@@ -2,6 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import couple from "@/assets/couple.jpg.asset.json";
+import music from "@/assets/i-found-you.m4a.asset.json";
+import specialMomentOne from "@/assets/special-moment-1.jpg.asset.json";
+import specialMomentTwo from "@/assets/special-moment-2.jpg.asset.json";
 import { Button } from "@/components/ui/button";
 import { Countdown } from "@/components/Countdown";
 import { RsvpModal, readRsvp, type RsvpData } from "@/components/RsvpModal";
@@ -10,8 +13,7 @@ const EVENT = {
   mapsUrl: "https://maps.app.goo.gl/73r5NvV88qaigw8H7?g_st=ac",
 };
 
-// Add a licensed file at public/music/i-found-you.mp3, then set this value to its path.
-const MUSIC_SRC: string | null = null;
+const MUSIC_SRC = music.url;
 
 type Language = "en" | "ar";
 
@@ -35,7 +37,7 @@ const copy = {
     countdownTitle: "Until we celebrate",
     momentsKicker: "Special moments",
     momentsTitle: "Little memories, big feelings.",
-    photoComing: "Your photo here",
+    momentAlt: ["Aziz and Malak sharing a joyful moment", "A bouquet of deep red roses from their special day"],
     venueKicker: "The venue",
     venueTitle: "Kerdasa, Giza",
     venueBody: "Join us as we celebrate this beautiful beginning with the people we love.",
@@ -70,7 +72,7 @@ const copy = {
     countdownTitle: "حتى نحتفل معاً",
     momentsKicker: "لحظات خاصة",
     momentsTitle: "ذكريات صغيرة ومشاعر كبيرة.",
-    photoComing: "صورتكم هنا",
+    momentAlt: ["عزيز وملك في لحظة سعيدة", "باقة من الورود الحمراء من يومهما المميز"],
     venueKicker: "مكان الحفل",
     venueTitle: "كرداسة، الجيزة",
     venueBody: "شاركونا الاحتفال بهذه البداية الجميلة بين أهلنا وأحبائنا.",
@@ -172,6 +174,7 @@ function Index() {
   const openInvitation = useCallback(() => {
     setOpened(true);
     if (MUSIC_SRC && audioRef.current) {
+      audioRef.current.volume = 0.55;
       void audioRef.current.play().then(() => setMusicOn(true)).catch(() => setMusicOn(false));
     }
   }, []);
@@ -266,9 +269,9 @@ function Index() {
             <p className="section-kicker">{text.momentsKicker}</p>
             <h2 className="section-heading">{text.momentsTitle}</h2>
             <div className="moments-grid">
-              {[1, 2].map((slot) => (
-                <div className="moment-frame" key={slot}>
-                  <div className="moment-placeholder"><span>{text.photoComing}</span></div>
+              {[specialMomentOne, specialMomentTwo].map((photo, index) => (
+                <div className="moment-frame" key={photo.asset_id}>
+                  <img className="moment-image" src={photo.url} alt={text.momentAlt[index] ?? text.momentsKicker} />
                 </div>
               ))}
             </div>

@@ -226,6 +226,9 @@
 .moments-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; margin-top: 3rem; align-items: start; }
 .moment-frame { position: relative; background: var(--card); padding: 0.4rem; box-shadow: var(--shadow-editorial); }
 .moment-frame:nth-child(2) { margin-top: 2.5rem; }
+.moment-image { display: block; width: 100%; aspect-ratio: 3 / 4; object-fit: cover; object-position: center; filter: saturate(0.9) contrast(0.98); }
+.moment-frame:first-child .moment-image { object-position: center 45%; }
+.moment-frame:nth-child(2) .moment-image { object-position: center 42%; }
 .moment-placeholder { display: grid; aspect-ratio: 3 / 4; place-items: center; border: 1px solid var(--border); background: var(--muted); padding: 1rem; text-align: center; }
 .moment-placeholder span { color: var(--muted-foreground); font-family: var(--font-display); font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; }
 [dir="rtl"] .moment-placeholder span { font-family: var(--font-amiri); font-size: 0.8rem; letter-spacing: 0; }
